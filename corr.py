@@ -1,18 +1,26 @@
 import numpy as np
-from scipy.stats import pointbiserialr
+from scipy.stats import chi2_contingency
 
 # Your data
-gender = ['m', 'f', 'm', 'f', 'm', 'm', 'm', 'f', 'f', 'f']
-salary = [10, 4, 15, 3, 9, 11, 9, 3, 2, 1]
+gender = ['m', 'f', 'm', 'f', 'm', 'f', 'm', 'f']
+job = ['teacher', 'programming', 'teacher', 'police', 'teacher', 'programming', 'teacher', 'programming']
 
-# Convert gender to numerical values (0 for 'm', 1 for 'f')
-gender_numeric = np.array([0 if g == 'm' else 1 for g in gender])
+# Create a contingency table
+observed = np.array([gender, job]).T
+observed_table = np.array([[np.sum((observed[:, 0] == 'm') & (observed[:, 1] == 'teacher')),
+                           np.sum((observed[:, 0] == 'm') & (observed[:, 1] == 'programming')),
+                           np.sum((observed[:, 0] == 'm') & (observed[:, 1] == 'police'))],
+                          [np.sum((observed[:, 0] == 'f') & (observed[:, 1] == 'teacher')),
+                           np.sum((observed[:, 0] == 'f') & (observed[:, 1] == 'programming')),
+                           np.sum((observed[:, 0] == 'f') & (observed[:, 1] == 'police'))]])
 
-# Calculate point-biserial correlation
-correlation, p_value = pointbiserialr(gender_numeric, salary)
+# Perform the chi-squared test
+chi2, _, _, _ = chi2_contingency(observed_table)
 
-# Calculate R-squared
-r_squared = correlation**2
+# Calculate Cramér's V
+n = np.sum(observed_table)
+min_dim = min(observed_table.shape) - 1
+v = np.sqrt(chi2 / (n * min_dim))
 
-print(f"Correlation coefficient: {correlation:.4f}")
-print(f"R-squared: {r_squared:.2%}")
+# Output the results
+print(f"Cramer's V: {v}")
